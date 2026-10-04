@@ -1,11 +1,8 @@
-import { Link } from 'react-router-dom';
-import { TonConnectButton, useTonAddress } from '@tonconnect/ui-react';
+	mport { Link } from 'react-router-dom';
+import { TonConnectButton } from '@tonconnect/ui-react';
 import Logo from './Logo';
-import WalletInfo from './WalletInfo';
 
 export default function Header() {
-  const userAddress = useTonAddress();
-
   return (
     <header className="header">
       <Link to="/" className="header-logo">
@@ -13,7 +10,7 @@ export default function Header() {
       </Link>
       <div className="header-nav">
         <Link to="/create" className="nav-btn secondary">+ Create</Link>
-        {userAddress ? <WalletInfo /> : <TonConnectButton />}
+        <TonConnectButton />
       </div>
     </header>
   );
