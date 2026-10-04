@@ -1,0 +1,109 @@
+;; ============================================
+;; ton.fun - Token Factory Contract
+;; Language: FunC
+;; Fee: 1 TON creation + 0.5 TON min first buy
+;; ============================================
+
+#include "imports/stdlib.fc";
+
+;; ===== Constants =====
+const int CREATION_FEE = 1000000000;      ;; 1 TON in nanoTON
+const int MIN_FIRST_BUY = 500000000;      ;; 0.5 TON
+
+;; ===== Load Data =====
+(slice, slice, int, int, int) load_data() {
+    slice ds = get_data().begin_parse();
+    return (
+        ds~load_msg_addr(),      ;; owner
+        ds~load_msg_addr(),      ;; platform_wallet
+        ds~load_uint(64),        ;; total_tokens_created
+        ds~load_coins(),         ;; creation_fee
+        ds~load_coins()          ;; min_first_buy
+    );
+}
+
+;; ===== Save Data =====
+() save_data(slice owner, slice platform_wallet, int total, int fee, int min_buy) impure {
+    set_data(begin_cell()
+        .store_slice(owner)
+        .store_slice(platform_wallet)
+        .store_uint(total, 64)
+        .store_coins(fee)
+        .store_coins(min_buy)
+        .end_cell());
+}
+
+;; ===== Address Comparison Helper =====
+int addresses_equal(slice a, slice b) {
+    return slice_hash(a) == slice_hash(b);
+}
+
+;; ===== Main Entry Point =====
+() recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
+    if (in_msg_body.slice_empty?()) { return (); }
+    
+    slice cs = in_msg_full.begin_parse();
+    int flags = cs~load_uint(4);
+    if (flags & 1) { return (); }  ;; ignore bounced messages
+    
+    slice sender_address = cs~load_msg_addr();
+    
+    ;; Load storage
+    (slice owner, slice platform_wallet, int total_tokens, int creation_fee, int min_first_buy) = load_data();
+    
+    ;; Parse operation code
+    int op = in_msg_body~load_uint(32);
+    
+    ;; ===== Create Token (op = 1) =====
+    if (op == 1) {
+        int required = creation_fee + min_first_buy;
+        throw_unless(401, msg_value >= required);
+        
+        cell fee_msg = begin_cell()
+            .store_uint(0, 32)
+            .end_cell();
+        
+        send_raw_message(begin_cell()
+            .store_uint(0x18, 6)
+            .store_slice(platform_wallet)
+            .store_coins(creation_fee)
+            .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1 + 1)
+            .store_ref(fee_msg)
+            .end_cell(), 1);
+        
+        total_tokens = total_tokens + 1;
+        save_data(owner, platform_wallet, total_tokens, creation_fee, min_first_buy);
+        return ();
+    }
+    
+    ;; ===== Update Fee (op = 2, Admin Only) =====
+    if (op == 2) {
+        throw_unless(402, addresses_equal(sender_address, owner));
+        int new_fee = in_msg_body~load_coins();
+        save_data(owner, platform_wallet, total_tokens, new_fee, min_first_buy);
+        return ();
+    }
+    
+    return ();
+}
+
+;; ===== Getter Functions =====
+int get_token_count() method_id {
+    (slice owner, slice platform_wallet, int total, int fee, int min_buy) = load_data();
+    return total;
+}
+
+int get_creation_fee() method_id {
+    (slice owner, slice platform_wallet, int total, int fee, int min_buy) = load_data();
+    return fee;
+}
+
+slice get_platform_wallet() method_id {
+    (slice owner, slice platform_wallet, int total, int fee, int min_buy) = load_data();
+    return platform_wallet;
+}
+
+slice get_owner() method_id {
+    (slice owner, slice platform_wallet, int total, int fee, int min_buy) = load_data();
+    return owner;
+}

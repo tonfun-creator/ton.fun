@@ -1,0 +1,230 @@
+;; ============================================
+;; ton.fun - Bonding Curve Contract
+;; Internal Accounting version
+;; FunC 0.4.6 compatible — Final checked
+;; ============================================
+
+#include "imports/stdlib.fc";
+
+const int HARD_CAP = 1000000000000;
+const int PLATFORM_FEE_BPS = 95;
+const int CREATOR_FEE_BPS = 30;
+const int K_CONSTANT = 2000000;
+
+;; ===== Load Data =====
+(int, slice, slice, slice, slice, int, int, int, int, cell) load_data() {
+    slice ds = get_data().begin_parse();
+    int token_id = ds~load_uint(64);
+    slice token_name = ds~load_ref().begin_parse();
+    slice token_symbol = ds~load_ref().begin_parse();
+    slice creator = ds~load_msg_addr();
+    slice platform_wallet = ds~load_msg_addr();
+    int supply = ds~load_coins();
+    int raised = ds~load_coins();
+    int graduated = ds~load_uint(8);
+    int k = ds~load_coins();
+    cell balances = ds~load_dict();
+    return (token_id, token_name, token_symbol, creator, platform_wallet, supply, raised, graduated, k, balances);
+}
+
+;; ===== Save Data =====
+() save_data(int token_id, slice token_name, slice token_symbol, slice creator, slice platform_wallet, int supply, int raised, int graduated, int k, cell balances) impure {
+    set_data(begin_cell()
+        .store_uint(token_id, 64)
+        .store_ref(begin_cell().store_slice(token_name).end_cell())
+        .store_ref(begin_cell().store_slice(token_symbol).end_cell())
+        .store_slice(creator)
+        .store_slice(platform_wallet)
+        .store_coins(supply)
+        .store_coins(raised)
+        .store_uint(graduated, 8)
+        .store_coins(k)
+        .store_dict(balances)
+        .end_cell());
+}
+
+;; ===== Read User Balance =====
+int read_balance(cell balances, slice user) {
+    if (null?(balances)) { return 0; }
+    int key = slice_hash(user);
+    (slice value, int found) = udict_get?(balances, 256, key);
+    if (found) {
+        return value~load_coins();
+    }
+    return 0;
+}
+
+;; ===== Write User Balance =====
+cell write_balance(cell balances, slice user, int balance) {
+    int key = slice_hash(user);
+    return udict_set_builder(balances, 256, key, begin_cell().store_coins(balance));
+}
+
+;; ===== Square Root =====
+int sqrt(int x) {
+    if (x == 0) { return 0; }
+    int z = (x + 1) / 2;
+    int y = x;
+    while (z < y) {
+        y = z;
+        z = (x / z + z) / 2;
+    }
+    return y;
+}
+
+;; ===== Calculate Tokens Out =====
+int calc_tokens_out(int ton_in, int supply, int k) {
+    int numerator = 2 * k * ton_in + k * k * supply * supply;
+    int sqrt_val = sqrt(numerator);
+    return (sqrt_val - k * supply) / k;
+}
+
+;; ===== Calculate TON Out =====
+int calc_ton_out(int tokens_in, int supply, int k) {
+    int new_supply = supply - tokens_in;
+    return k * (supply * supply - new_supply * new_supply) / 2;
+}
+
+;; ===== Main Entry =====
+() recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
+    if (in_msg_body.slice_empty?()) { return (); }
+
+    slice cs = in_msg_full.begin_parse();
+    int flags = cs~load_uint(4);
+    if (flags & 1) { return (); }
+
+    slice sender_address = cs~load_msg_addr();
+
+    (int token_id, slice token_name, slice token_symbol, slice creator, slice platform_wallet, int supply, int raised, int graduated, int k, cell balances) = load_data();
+
+    if (graduated == 1) { return (); }
+
+    int op = in_msg_body~load_uint(32);
+    int query_id = in_msg_body~load_uint(64);
+
+    ;; ===== BUY =====
+    if (op == 1) {
+        int ton_in = msg_value;
+        throw_unless(401, ton_in > 100000000);
+
+        int platform_fee = ton_in * PLATFORM_FEE_BPS / 10000;
+        int creator_fee = ton_in * CREATOR_FEE_BPS / 10000;
+        int net_ton = ton_in - platform_fee - creator_fee;
+
+        int tokens_out = calc_tokens_out(net_ton, supply, k);
+        throw_unless(402, tokens_out > 0);
+
+        supply = supply + tokens_out;
+        raised = raised + ton_in;
+
+        int user_bal = read_balance(balances, sender_address);
+        balances = write_balance(balances, sender_address, user_bal + tokens_out);
+
+        cell empty_msg = begin_cell().store_uint(0, 32).end_cell();
+
+        send_raw_message(begin_cell()
+            .store_uint(0x18, 6)
+            .store_slice(platform_wallet)
+            .store_coins(platform_fee)
+            .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1 + 1)
+            .store_ref(empty_msg)
+            .end_cell(), 1);
+
+        send_raw_message(begin_cell()
+            .store_uint(0x18, 6)
+            .store_slice(creator)
+            .store_coins(creator_fee)
+            .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1 + 1)
+            .store_ref(empty_msg)
+            .end_cell(), 1);
+
+        if (raised >= HARD_CAP) { graduated = 1; }
+
+        save_data(token_id, token_name, token_symbol, creator, platform_wallet, supply, raised, graduated, k, balances);
+        return ();
+    }
+
+    ;; ===== SELL =====
+    if (op == 2) {
+        int tokens_in = in_msg_body~load_coins();
+        throw_unless(403, tokens_in > 0);
+        throw_unless(404, tokens_in <= supply);
+
+        int user_bal = read_balance(balances, sender_address);
+        throw_unless(405, user_bal >= tokens_in);
+
+        int ton_out = calc_ton_out(tokens_in, supply, k);
+        throw_unless(406, ton_out > 0);
+
+        int platform_fee = ton_out * PLATFORM_FEE_BPS / 10000;
+        int creator_fee = ton_out * CREATOR_FEE_BPS / 10000;
+        int net_ton = ton_out - platform_fee - creator_fee;
+
+        supply = supply - tokens_in;
+        raised = raised - ton_out;
+
+        balances = write_balance(balances, sender_address, user_bal - tokens_in);
+
+        cell empty_msg = begin_cell().store_uint(0, 32).end_cell();
+
+        send_raw_message(begin_cell()
+            .store_uint(0x18, 6)
+            .store_slice(platform_wallet)
+            .store_coins(platform_fee)
+            .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1 + 1)
+            .store_ref(empty_msg)
+            .end_cell(), 1);
+
+        send_raw_message(begin_cell()
+            .store_uint(0x18, 6)
+            .store_slice(creator)
+            .store_coins(creator_fee)
+            .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1 + 1)
+            .store_ref(empty_msg)
+            .end_cell(), 1);
+
+        send_raw_message(begin_cell()
+            .store_uint(0x18, 6)
+            .store_slice(sender_address)
+            .store_coins(net_ton)
+            .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1 + 1)
+            .store_ref(empty_msg)
+            .end_cell(), 1);
+
+        save_data(token_id, token_name, token_symbol, creator, platform_wallet, supply, raised, graduated, k, balances);
+        return ();
+    }
+
+    return ();
+}
+
+;; ===== Getters =====
+int get_supply() method_id {
+    (int a, slice b, slice c, slice d, slice e, int supply, int f, int g, int h, cell i) = load_data();
+    return supply;
+}
+
+int get_raised() method_id {
+    (int a, slice b, slice c, slice d, slice e, int f, int raised, int g, int h, cell i) = load_data();
+    return raised;
+}
+
+int get_price() method_id {
+    (int a, slice b, slice c, slice d, slice e, int supply, int f, int g, int k, cell i) = load_data();
+    return k * supply;
+}
+
+int is_graduated() method_id {
+    (int a, slice b, slice c, slice d, slice e, int f, int g, int graduated, int h, cell i) = load_data();
+    return graduated;
+}
+
+slice get_creator() method_id {
+    (int a, slice b, slice c, slice creator, slice e, int f, int g, int h, int i, cell j) = load_data();
+    return creator;
+}
+
+int get_user_balance(slice user) method_id {
+    (int a, slice b, slice c, slice d, slice e, int f, int g, int h, int i, cell balances) = load_data();
+    return read_balance(balances, user);
+}

@@ -1,0 +1,209 @@
+;; ============================================
+;; TEP-74 Jetton Master Contract
+;; FunC 0.4.6 compatible — Final checked
+;; ============================================
+
+#include "imports/stdlib.fc";
+
+;; ===== Op Codes =====
+const int op::mint = 21;
+const int op::burn_notification = 0x7bdd97de;
+const int op::provide_wallet_address = 0x2c76b973;
+const int op::take_wallet_address = 0xd1735400;
+const int op::internal_transfer = 0x178d4519;
+
+;; ===== Load Data =====
+(int, slice, cell, cell, slice) load_data() {
+    slice ds = get_data().begin_parse();
+    return (
+        ds~load_coins(),
+        ds~load_msg_addr(),
+        ds~load_ref(),
+        ds~load_ref(),
+        ds~load_msg_addr()
+    );
+}
+
+;; ===== Save Data =====
+() save_data(int total_supply, slice admin_address, cell content, cell jetton_wallet_code, slice bonding_curve_address) impure {
+    set_data(begin_cell()
+        .store_coins(total_supply)
+        .store_slice(admin_address)
+        .store_ref(content)
+        .store_ref(jetton_wallet_code)
+        .store_slice(bonding_curve_address)
+        .end_cell());
+}
+
+;; ===== Calculate Wallet State Init =====
+cell calculate_wallet_state_init(slice owner_address, slice jetton_master_address, cell jetton_wallet_code) {
+    cell wallet_data = begin_cell()
+        .store_coins(0)
+        .store_slice(owner_address)
+        .store_slice(jetton_master_address)
+        .store_ref(jetton_wallet_code)
+        .end_cell();
+    
+    return begin_cell()
+        .store_uint(0, 2)
+        .store_dict(jetton_wallet_code)
+        .store_dict(wallet_data)
+        .store_uint(0, 1)
+        .end_cell();
+}
+
+;; ===== Calculate Wallet Address =====
+slice calculate_jetton_wallet_address(slice owner_address, slice jetton_master_address, cell jetton_wallet_code) {
+    cell state_init = calculate_wallet_state_init(owner_address, jetton_master_address, jetton_wallet_code);
+    int hash = cell_hash(state_init);
+    return begin_cell()
+        .store_uint(4, 3)
+        .store_int(0, 8)
+        .store_uint(hash, 256)
+        .end_cell()
+        .begin_parse();
+}
+
+;; ===== Mint Tokens =====
+() mint_tokens(slice to_address, slice jetton_master_address, cell jetton_wallet_code, int amount, slice send_to_address) impure {
+    cell wallet_state_init = calculate_wallet_state_init(to_address, jetton_master_address, jetton_wallet_code);
+    int wallet_hash = cell_hash(wallet_state_init);
+    
+    slice wallet_address = begin_cell()
+        .store_uint(4, 3)
+        .store_int(0, 8)
+        .store_uint(wallet_hash, 256)
+        .end_cell()
+        .begin_parse();
+    
+    cell mint_body = begin_cell()
+        .store_uint(op::internal_transfer, 32)
+        .store_uint(0, 64)
+        .store_coins(amount)
+        .store_slice(to_address)
+        .store_slice(send_to_address)
+        .store_coins(0)
+        .store_uint(0, 1)
+        .end_cell();
+    
+    send_raw_message(begin_cell()
+        .store_uint(0x18, 6)
+        .store_slice(wallet_address)
+        .store_coins(50000000)
+        .store_uint(4 + 2 + 1, 1 + 4 + 4 + 64 + 32 + 1 + 1 + 1)
+        .store_ref(wallet_state_init)
+        .store_ref(mint_body)
+        .end_cell(), 1);
+}
+
+;; ===== Main Entry Point =====
+() recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
+    if (in_msg_body.slice_empty?()) { return (); }
+    
+    slice cs = in_msg_full.begin_parse();
+    int flags = cs~load_uint(4);
+    if (flags & 1) { return (); }
+    
+    slice sender_address = cs~load_msg_addr();
+    
+    (int total_supply, slice admin_address, cell content, cell jetton_wallet_code, slice bonding_curve_address) = load_data();
+    
+    slice master_address = my_address();
+    
+    int op = in_msg_body~load_uint(32);
+    int query_id = in_msg_body~load_uint(64);
+    
+    ;; ===== Mint =====
+    if (op == op::mint) {
+        slice to_address = in_msg_body~load_msg_addr();
+        int amount = in_msg_body~load_coins();
+        
+        throw_unless(401,
+            (slice_hash(sender_address) == slice_hash(bonding_curve_address)) |
+            (slice_hash(sender_address) == slice_hash(admin_address))
+        );
+        
+        total_supply = total_supply + amount;
+        
+        mint_tokens(to_address, master_address, jetton_wallet_code, amount, sender_address);
+        
+        save_data(total_supply, admin_address, content, jetton_wallet_code, bonding_curve_address);
+        return ();
+    }
+    
+    ;; ===== Burn Notification =====
+    if (op == op::burn_notification) {
+        int amount = in_msg_body~load_coins();
+        slice from_address = in_msg_body~load_msg_addr();
+        
+        slice expected_wallet = calculate_jetton_wallet_address(from_address, master_address, jetton_wallet_code);
+        throw_unless(402, slice_hash(sender_address) == slice_hash(expected_wallet));
+        
+        total_supply = total_supply - amount;
+        
+        save_data(total_supply, admin_address, content, jetton_wallet_code, bonding_curve_address);
+        return ();
+    }
+    
+    ;; ===== Provide Wallet Address =====
+    if (op == op::provide_wallet_address) {
+        slice owner_address = in_msg_body~load_msg_addr();
+        int include_address = in_msg_body~load_uint(1);
+        
+        slice wallet_address = calculate_jetton_wallet_address(owner_address, master_address, jetton_wallet_code);
+        
+        cell response = begin_cell()
+            .store_uint(op::take_wallet_address, 32)
+            .store_uint(query_id, 64)
+            .store_slice(wallet_address)
+            .store_uint(0, 1)
+            .end_cell();
+        
+        if (include_address == 1) {
+            response = begin_cell()
+                .store_uint(op::take_wallet_address, 32)
+                .store_uint(query_id, 64)
+                .store_slice(wallet_address)
+                .store_slice(owner_address)
+                .end_cell();
+        }
+        
+        send_raw_message(begin_cell()
+            .store_uint(0x18, 6)
+            .store_slice(sender_address)
+            .store_coins(0)
+            .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1 + 1)
+            .store_ref(response)
+            .end_cell(), 64);
+        
+        return ();
+    }
+    
+    return ();
+}
+
+;; ===== Getter Functions =====
+int get_total_supply() method_id {
+    (int total_supply, slice admin, cell content, cell wallet_code, slice bc) = load_data();
+    return total_supply;
+}
+
+slice get_admin_address() method_id {
+    (int total_supply, slice admin, cell content, cell wallet_code, slice bc) = load_data();
+    return admin;
+}
+
+cell get_content() method_id {
+    (int total_supply, slice admin, cell content, cell wallet_code, slice bc) = load_data();
+    return content;
+}
+
+cell get_jetton_wallet_code() method_id {
+    (int total_supply, slice admin, cell content, cell wallet_code, slice bc) = load_data();
+    return wallet_code;
+}
+
+slice get_bonding_curve_address() method_id {
+    (int total_supply, slice admin, cell content, cell wallet_code, slice bc) = load_data();
+    return bc;
+}
