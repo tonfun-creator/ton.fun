@@ -15,6 +15,7 @@
     "@ton/ton": "^16.3.0",
     "@tonconnect/ui-react": "^3.0.2",
     "@twa-dev/sdk": "^8.0.2",
+    "lightweight-charts": "^5.2.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.4"
