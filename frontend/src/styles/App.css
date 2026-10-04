@@ -1469,3 +1469,39 @@ body {
   background: #ef4444;
   color: #fff;
 }
+/* ===== Wallet Info ===== */
+.wallet-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #0a0a0a;
+  border-radius: 10px;
+  padding: 6px 10px;
+}
+
+.wallet-address {
+  color: #90EE90;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wallet-dot {
+  width: 8px;
+  height: 8px;
+  background: #4ade80;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #4ade80;
+}
+
+.wallet-disconnect {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 6px;
+}
