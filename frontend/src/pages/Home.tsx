@@ -1,4 +1,4 @@
-	mport { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import TokenCard from '../components/TokenCard';
 
 const DEMO_TOKENS = [
