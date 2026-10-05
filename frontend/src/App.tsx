@@ -6,6 +6,8 @@ import TokenDetail from './pages/TokenDetail';
 import Portfolio from './pages/Portfolio';
 import Leaderboard from './pages/Leaderboard';
 import Trending from './pages/Trending';
+import Profile from './pages/Profile';
+import TopCallers from './pages/TopCallers';
 
 function BottomNav() {
   const location = useLocation();
@@ -33,6 +35,8 @@ export default function App() {
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/trending" element={<Trending />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/top-callers" element={<TopCallers />} />
           <Route path="/token/:address" element={<TokenDetail />} />
         </Routes>
       </main>

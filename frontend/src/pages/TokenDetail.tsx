@@ -1,3 +1,5 @@
+import Comments from '../components/Comments';
+import FollowButton from '../components/FollowButton';
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import PriceChart from '../components/PriceChart';
@@ -45,7 +47,7 @@ const CALLOUTS = [
 
 export default function TokenDetail() {
   const { address } = useParams();
-  const [tab, setTab] = useState<'callouts' | 'holders' | 'about'>('callouts');
+const [tab, setTab] = useState<'callouts' | 'comments' | 'holders' | 'about'>('callouts');
   const [tradeTab, setTradeTab] = useState<'buy' | 'sell'>('buy');
   const [amount, setAmount] = useState('');
   const [timeframe, setTimeframe] = useState('1h');
@@ -125,7 +127,8 @@ export default function TokenDetail() {
 
       <div className="detail-tabs">
         <button className={`detail-tab ${tab === 'callouts' ? 'active' : ''}`} onClick={() => setTab('callouts')}>Callouts</button>
-        <button className={`detail-tab ${tab === 'holders' ? 'active' : ''}`} onClick={() => setTab('holders')}>Holders</button>
+<button className={`detail-tab ${tab === 'comments' ? 'active' : ''}`} onClick={() => setTab('comments')}>Comments</button>        
+<button className={`detail-tab ${tab === 'holders' ? 'active' : ''}`} onClick={() => setTab('holders')}>Holders</button>
         <button className={`detail-tab ${tab === 'about' ? 'active' : ''}`} onClick={() => setTab('about')}>About</button>
       </div>
 
@@ -139,7 +142,8 @@ export default function TokenDetail() {
                 <div className="callout-header">
                   <strong>{c.user}</strong>
                   <span className="follow-btn">Follow</span>
-                  <span className="callout-time">{c.time}</span>
+<FollowButton username={c.user} />                  
+<span className="callout-time">{c.time}</span>
                 </div>
                 <p>{c.text}</p>
                 <div className="callout-position">
@@ -181,7 +185,9 @@ export default function TokenDetail() {
           ))}
         </div>
       )}
-
+{tab === 'comments' && (
+  <Comments tokenAddress={address || ''} />
+)}
       {tab === 'about' && (
         <div className="detail-about">
           <div className="detail-section">
