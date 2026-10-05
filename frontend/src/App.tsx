@@ -1,11 +1,9 @@
-import { useState } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Home from './pages/Home';
 import Create from './pages/Create';
 import TokenDetail from './pages/TokenDetail';
 import Portfolio from './pages/Portfolio';
-import Splash from './components/Splash';
 
 function BottomNav() {
   const location = useLocation();
@@ -21,12 +19,6 @@ function BottomNav() {
 }
 
 function App() {
-  const [showSplash, setShowSplash] = useState(true);
-
-  if (showSplash) {
-    return <Splash onComplete={() => setShowSplash(false)} />;
-  }
-
   return (
     <div className="app">
       <Header />
