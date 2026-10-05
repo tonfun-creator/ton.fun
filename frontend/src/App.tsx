@@ -8,6 +8,7 @@ import Leaderboard from './pages/Leaderboard';
 import Trending from './pages/Trending';
 import Profile from './pages/Profile';
 import TopCallers from './pages/TopCallers';
+import Rewards from './pages/Rewards';
 
 function BottomNav() {
   const location = useLocation();
@@ -17,7 +18,7 @@ function BottomNav() {
     <nav className="bottom-nav">
       <Link to="/" className={`bottom-nav-item ${isActive('/') ? 'active' : ''}`}>🏠</Link>
       <Link to="/trending" className={`bottom-nav-item ${isActive('/trending') ? 'active' : ''}`}>🔥</Link>
-      <Link to="/leaderboard" className={`bottom-nav-item ${isActive('/leaderboard') ? 'active' : ''}`}>🏆</Link>
+      <Link to="/rewards" className={`bottom-nav-item ${isActive('/rewards') ? 'active' : ''}`}>🎁</Link>
       <Link to="/portfolio" className={`bottom-nav-item ${isActive('/portfolio') ? 'active' : ''}`}>👛</Link>
       <Link to="/create" className={`bottom-nav-item ${isActive('/create') ? 'active' : ''}`}>➕</Link>
     </nav>
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="/trending" element={<Trending />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/top-callers" element={<TopCallers />} />
+          <Route path="/rewards" element={<Rewards />} />
           <Route path="/token/:address" element={<TokenDetail />} />
         </Routes>
       </main>

@@ -1,10 +1,11 @@
-import Comments from '../components/Comments';
-import FollowButton from '../components/FollowButton';
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import PriceChart from '../components/PriceChart';
 import TokenActions from '../components/TokenActions';
 import EmojiReactions from '../components/EmojiReactions';
+import Comments from '../components/Comments';
+import FollowButton from '../components/FollowButton';
+import MemeGenerator from '../components/MemeGenerator';
 
 interface CandleData {
   time: number;
@@ -47,7 +48,7 @@ const CALLOUTS = [
 
 export default function TokenDetail() {
   const { address } = useParams();
-const [tab, setTab] = useState<'callouts' | 'comments' | 'holders' | 'about'>('callouts');
+  const [tab, setTab] = useState<'callouts' | 'comments' | 'holders' | 'about'>('callouts');
   const [tradeTab, setTradeTab] = useState<'buy' | 'sell'>('buy');
   const [amount, setAmount] = useState('');
   const [timeframe, setTimeframe] = useState('1h');
@@ -121,14 +122,20 @@ const [tab, setTab] = useState<'callouts' | 'comments' | 'holders' | 'about'>('c
 
       <div className="detail-timeframes">
         {['1m', '5m', '15m', '1h', 'All'].map(tf => (
-          <button key={tf} className={`timeframe-btn ${timeframe === tf ? 'active' : ''}`} onClick={() => setTimeframe(tf)}>{tf}</button>
+          <button
+            key={tf}
+            className={`timeframe-btn ${timeframe === tf ? 'active' : ''}`}
+            onClick={() => setTimeframe(tf)}
+          >
+            {tf}
+          </button>
         ))}
       </div>
 
       <div className="detail-tabs">
         <button className={`detail-tab ${tab === 'callouts' ? 'active' : ''}`} onClick={() => setTab('callouts')}>Callouts</button>
-<button className={`detail-tab ${tab === 'comments' ? 'active' : ''}`} onClick={() => setTab('comments')}>Comments</button>        
-<button className={`detail-tab ${tab === 'holders' ? 'active' : ''}`} onClick={() => setTab('holders')}>Holders</button>
+        <button className={`detail-tab ${tab === 'comments' ? 'active' : ''}`} onClick={() => setTab('comments')}>Comments</button>
+        <button className={`detail-tab ${tab === 'holders' ? 'active' : ''}`} onClick={() => setTab('holders')}>Holders</button>
         <button className={`detail-tab ${tab === 'about' ? 'active' : ''}`} onClick={() => setTab('about')}>About</button>
       </div>
 
@@ -141,9 +148,8 @@ const [tab, setTab] = useState<'callouts' | 'comments' | 'holders' | 'about'>('c
               <div className="callout-content">
                 <div className="callout-header">
                   <strong>{c.user}</strong>
-                  <span className="follow-btn">Follow</span>
-<FollowButton username={c.user} />                  
-<span className="callout-time">{c.time}</span>
+                  <FollowButton username={c.user} />
+                  <span className="callout-time">{c.time}</span>
                 </div>
                 <p>{c.text}</p>
                 <div className="callout-position">
@@ -161,6 +167,10 @@ const [tab, setTab] = useState<'callouts' | 'comments' | 'holders' | 'about'>('c
             </div>
           ))}
         </div>
+      )}
+
+      {tab === 'comments' && (
+        <Comments tokenAddress={address || ''} />
       )}
 
       {tab === 'holders' && (
@@ -185,21 +195,47 @@ const [tab, setTab] = useState<'callouts' | 'comments' | 'holders' | 'about'>('c
           ))}
         </div>
       )}
-{tab === 'comments' && (
-  <Comments tokenAddress={address || ''} />
-)}
+
       {tab === 'about' && (
         <div className="detail-about">
           <div className="detail-section">
             <h3>Audit ℹ️</h3>
             <div className="audit-grid">
-              <div className="audit-box"><div className="audit-icon">≋</div><div className="audit-value">{token.fees}</div><div className="audit-label">Fees</div></div>
-              <div className="audit-box"><div className="audit-icon green">👤</div><div className="audit-value">{token.holders}</div><div className="audit-label">Holders</div></div>
-              <div className="audit-box"><div className="audit-icon red">👑</div><div className="audit-value">{token.top10}%</div><div className="audit-label">Top 10</div></div>
-              <div className="audit-box"><div className="audit-icon green">🎯</div><div className="audit-value">{token.snipers}%</div><div className="audit-label">Snipers</div></div>
-              <div className="audit-box"><div className="audit-icon">—</div><div className="audit-value">{token.devHoldings}</div><div className="audit-label">Dev</div></div>
-              <div className="audit-box"><div className="audit-icon green">📚</div><div className="audit-value">{token.bundlers}%</div><div className="audit-label">Bundlers</div></div>
+              <div className="audit-box">
+                <div className="audit-icon">≋</div>
+                <div className="audit-value">{token.fees}</div>
+                <div className="audit-label">Fees</div>
+              </div>
+              <div className="audit-box">
+                <div className="audit-icon green">👤</div>
+                <div className="audit-value">{token.holders}</div>
+                <div className="audit-label">Holders</div>
+              </div>
+              <div className="audit-box">
+                <div className="audit-icon red">👑</div>
+                <div className="audit-value">{token.top10}%</div>
+                <div className="audit-label">Top 10</div>
+              </div>
+              <div className="audit-box">
+                <div className="audit-icon green">🎯</div>
+                <div className="audit-value">{token.snipers}%</div>
+                <div className="audit-label">Snipers</div>
+              </div>
+              <div className="audit-box">
+                <div className="audit-icon">—</div>
+                <div className="audit-value">{token.devHoldings}</div>
+                <div className="audit-label">Dev</div>
+              </div>
+              <div className="audit-box">
+                <div className="audit-icon green">📚</div>
+                <div className="audit-value">{token.bundlers}%</div>
+                <div className="audit-label">Bundlers</div>
+              </div>
             </div>
+          </div>
+
+          <div className="detail-section">
+            <MemeGenerator tokenName={token.name} tokenSymbol={token.symbol} emoji={token.emoji} />
           </div>
 
           <div className="detail-section">
@@ -207,7 +243,13 @@ const [tab, setTab] = useState<'callouts' | 'comments' | 'holders' | 'about'>('c
               <h3>Stats</h3>
               <div className="stats-timeframe">
                 {['5M', '1H', '1D'].map(t => (
-                  <button key={t} className={`stats-tf-btn ${statsTf === t ? 'active' : ''}`} onClick={() => setStatsTf(t)}>{t}</button>
+                  <button
+                    key={t}
+                    className={`stats-tf-btn ${statsTf === t ? 'active' : ''}`}
+                    onClick={() => setStatsTf(t)}
+                  >
+                    {t}
+                  </button>
                 ))}
               </div>
             </div>
@@ -221,19 +263,95 @@ const [tab, setTab] = useState<'callouts' | 'comments' | 'holders' | 'about'>('c
 
       <div style={{ padding: '16px', background: '#0a0a0a', borderTop: '1px solid #1a1a1a' }}>
         <div style={{ display: 'flex', gap: '4px', background: '#141414', borderRadius: '10px', padding: '4px', marginBottom: '12px' }}>
-          <button onClick={() => setTradeTab('buy')} style={{ flex: 1, padding: '10px', background: tradeTab === 'buy' ? '#2a2a2a' : 'transparent', color: tradeTab === 'buy' ? '#fff' : '#888', border: 'none', borderRadius: '8px', fontWeight: 800, fontSize: '14px', cursor: 'pointer' }}>Buy</button>
-          <button onClick={() => setTradeTab('sell')} style={{ flex: 1, padding: '10px', background: tradeTab === 'sell' ? '#2a2a2a' : 'transparent', color: tradeTab === 'sell' ? '#fff' : '#888', border: 'none', borderRadius: '8px', fontWeight: 800, fontSize: '14px', cursor: 'pointer' }}>Sell</button>
+          <button
+            onClick={() => setTradeTab('buy')}
+            style={{
+              flex: 1,
+              padding: '10px',
+              background: tradeTab === 'buy' ? '#2a2a2a' : 'transparent',
+              color: tradeTab === 'buy' ? '#fff' : '#888',
+              border: 'none',
+              borderRadius: '8px',
+              fontWeight: 800,
+              fontSize: '14px',
+              cursor: 'pointer',
+            }}
+          >
+            Buy
+          </button>
+          <button
+            onClick={() => setTradeTab('sell')}
+            style={{
+              flex: 1,
+              padding: '10px',
+              background: tradeTab === 'sell' ? '#2a2a2a' : 'transparent',
+              color: tradeTab === 'sell' ? '#fff' : '#888',
+              border: 'none',
+              borderRadius: '8px',
+              fontWeight: 800,
+              fontSize: '14px',
+              cursor: 'pointer',
+            }}
+          >
+            Sell
+          </button>
         </div>
 
-        <input type="number" placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value)} style={{ width: '100%', padding: '14px', fontSize: '18px', fontWeight: 800, border: '1px solid #2a2a2a', borderRadius: '10px', background: '#141414', color: '#fff', marginBottom: '10px', outline: 'none' }} />
+        <input
+          type="number"
+          placeholder="0"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '14px',
+            fontSize: '18px',
+            fontWeight: 800,
+            border: '1px solid #2a2a2a',
+            borderRadius: '10px',
+            background: '#141414',
+            color: '#fff',
+            marginBottom: '10px',
+            outline: 'none',
+          }}
+        />
 
         <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
           {quickAmounts.map(q => (
-            <button key={q} onClick={() => setAmount(q)} style={{ flex: 1, padding: '8px', background: amount === q ? '#2a2a2a' : '#141414', border: amount === q ? '1px solid #4ade80' : '1px solid #2a2a2a', borderRadius: '8px', color: amount === q ? '#4ade80' : '#aaa', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}>{q}</button>
+            <button
+              key={q}
+              onClick={() => setAmount(q)}
+              style={{
+                flex: 1,
+                padding: '8px',
+                background: amount === q ? '#2a2a2a' : '#141414',
+                border: amount === q ? '1px solid #4ade80' : '1px solid #2a2a2a',
+                borderRadius: '8px',
+                color: amount === q ? '#4ade80' : '#aaa',
+                fontWeight: 700,
+                fontSize: '13px',
+                cursor: 'pointer',
+              }}
+            >
+              {q}
+            </button>
           ))}
         </div>
 
-        <button onClick={handleTrade} style={{ width: '100%', padding: '16px', background: tradeTab === 'buy' ? '#4ade80' : '#ef4444', color: tradeTab === 'buy' ? '#0a0a0a' : '#fff', border: 'none', borderRadius: '12px', fontWeight: 900, fontSize: '15px', cursor: 'pointer' }}>
+        <button
+          onClick={handleTrade}
+          style={{
+            width: '100%',
+            padding: '16px',
+            background: tradeTab === 'buy' ? '#4ade80' : '#ef4444',
+            color: tradeTab === 'buy' ? '#0a0a0a' : '#fff',
+            border: 'none',
+            borderRadius: '12px',
+            fontWeight: 900,
+            fontSize: '15px',
+            cursor: 'pointer',
+          }}
+        >
           {tradeTab === 'buy' ? '💰 Buy' : '💸 Sell'} {token.symbol}
         </button>
       </div>
