@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { TonConnectButton } from '@tonconnect/ui-react';
 import Logo from './Logo';
 
 export default function Header() {
@@ -10,7 +9,9 @@ export default function Header() {
       </Link>
       <div className="header-nav">
         <Link to="/create" className="nav-btn secondary">+ Create</Link>
-        <TonConnectButton />
+        <button className="nav-btn">
+          Connect Wallet
+        </button>
       </div>
     </header>
   );
