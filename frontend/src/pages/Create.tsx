@@ -1,49 +1,51 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-type PoolPair = 'TON' | 'USDT' | 'custom';
-type RewardsTo = 'creator' | 'holders';
-type MayhemMode = 'classic' | 'trigger' | 'party';
+import { useTonConnectUI, useTonAddress } from '@tonconnect/ui-react';
+import { toNano } from '@ton/core';
+import { CONTRACTS, CREATION_FEE, MIN_FIRST_BUY, buildCreateTokenBody } from '../lib/contracts';
 
 export default function Create() {
   const navigate = useNavigate();
+  const [tonConnectUI] = useTonConnectUI();
+  const userAddress = useTonAddress();
 
-  // Form state
-  const [image, setImage] = useState<string>('');
   const [name, setName] = useState('');
   const [ticker, setTicker] = useState('');
   const [description, setDescription] = useState('');
-  const [poolPair, setPoolPair] = useState<PoolPair>('TON');
-  const [socials, setSocials] = useState({ twitter: '', telegram: '', website: '' });
-  const [rewardsTo, setRewardsTo] = useState<RewardsTo>('creator');
-  const [mayhemEnabled, setMayhemEnabled] = useState(false);
-  const [mayhemMode, setMayhemMode] = useState<MayhemMode>('classic');
   const [loading, setLoading] = useState(false);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setImage(reader.result as string);
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleSubmit = async () => {
+    if (!userAddress) {
+      alert('Pehle wallet connect karein');
+      return;
+    }
     if (!name || !ticker) {
       alert('Name aur Ticker zaroori hain');
       return;
     }
+
     setLoading(true);
     try {
-      // TODO: Contract se connect karke token create karo
-      console.log('Creating token:', {
-        name, ticker, description, poolPair, socials, rewardsTo, mayhemEnabled, mayhemMode
-      });
-      alert('Token create request bheja gaya (demo)');
-      navigate('/');
-    } catch (err) {
-      alert('Error: ' + err);
+      const totalValue = CREATION_FEE + MIN_FIRST_BUY + toNano('0.1');
+      const body = buildCreateTokenBody(name, ticker);
+
+      const transaction = {
+        validUntil: Math.floor(Date.now() / 1000) + 360,
+        messages: [
+          {
+            address: CONTRACTS.tokenFactory,
+            amount: totalValue.toString(),
+            payload: body.toBoc().toString('base64'),
+          },
+        ],
+      };
+
+      await tonConnectUI.sendTransaction(transaction);
+      alert('✅ Transaction bheja gaya! Token create ho raha hai...');
+      setTimeout(() => navigate('/'), 3000);
+    } catch (err: any) {
+      console.error(err);
+      alert('❌ Error: ' + (err.message || 'Transaction failed'));
     } finally {
       setLoading(false);
     }
@@ -55,36 +57,21 @@ export default function Create() {
         <h1 className="create-title">Create a coin</h1>
       </div>
 
-      {/* ===== Media Upload ===== */}
-      <div className="create-section">
-        <label className="create-label">Media</label>
-        <div className="media-upload">
-          {image ? (
-            <img src={image} alt="Token" className="media-preview" />
-          ) : (
-            <div className="media-placeholder">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-                <path d="M4 4h16v16H4z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-                <circle cx="9" cy="9" r="2" fill="currentColor"/>
-                <path d="M4 16l5-5 4 4 3-3 4 4" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-              </svg>
-              <p>Upload image or video</p>
-            </div>
-          )}
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="media-input"
-            id="media-upload"
-          />
-          <label htmlFor="media-upload" className="media-overlay">
-            {image ? 'Change media' : ''}
-          </label>
+      {!userAddress && (
+        <div style={{
+          background: '#3a1b1b',
+          border: '1px solid #ef4444',
+          borderRadius: '10px',
+          padding: '12px',
+          marginBottom: '16px',
+          color: '#ffaaaa',
+          fontSize: '13px',
+          fontWeight: 600
+        }}>
+          ⚠️ Pehle wallet connect karein
         </div>
-      </div>
+      )}
 
-      {/* ===== Name ===== */}
       <div className="create-section">
         <label className="create-label">Name</label>
         <input
@@ -97,7 +84,6 @@ export default function Create() {
         />
       </div>
 
-      {/* ===== Ticker ===== */}
       <div className="create-section">
         <label className="create-label">Ticker</label>
         <input
@@ -110,9 +96,10 @@ export default function Create() {
         />
       </div>
 
-      {/* ===== Description ===== */}
       <div className="create-section">
-        <label className="create-label">Description <span className="optional">Optional</span></label>
+        <label className="create-label">
+          Description <span className="optional">Optional</span>
+        </label>
         <textarea
           className="create-textarea"
           placeholder="Enter coin description"
@@ -123,159 +110,44 @@ export default function Create() {
         />
       </div>
 
-      {/* ===== Pool Pair ===== */}
-      <div className="create-section">
-        <label className="create-label">Pool pair</label>
-        <div className="pool-pair-grid">
-          <button
-            className={`pool-pair-btn ${poolPair === 'TON' ? 'active' : ''}`}
-            onClick={() => setPoolPair('TON')}
-          >
-            <div className="pool-icon pool-ton">💎</div>
-            <span>TON</span>
-          </button>
-          <button
-            className={`pool-pair-btn ${poolPair === 'USDT' ? 'active' : ''}`}
-            onClick={() => setPoolPair('USDT')}
-          >
-            <div className="pool-icon pool-usdt">$</div>
-            <span>USDT</span>
-          </button>
-          <button
-            className={`pool-pair-btn ${poolPair === 'custom' ? 'active' : ''}`}
-            onClick={() => setPoolPair('custom')}
-          >
-            <div className="pool-icon pool-custom">⚙️</div>
-            <span>Custom</span>
-          </button>
+      <div style={{
+        background: '#1a1a1a',
+        border: '1px solid #2a2a2a',
+        borderRadius: '10px',
+        padding: '14px',
+        marginBottom: '16px',
+        fontSize: '13px',
+        color: '#aaa'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <span>Creation fee</span>
+          <span style={{ color: '#fff', fontWeight: 700 }}>1 TON</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <span>Minimum first buy</span>
+          <span style={{ color: '#fff', fontWeight: 700 }}>0.5 TON</span>
+        </div>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          borderTop: '1px solid #2a2a2a',
+          paddingTop: '8px'
+        }}>
+          <span style={{ fontWeight: 700 }}>Total</span>
+          <span style={{ color: '#4ade80', fontWeight: 900 }}>1.5 TON</span>
         </div>
       </div>
 
-      {/* ===== Social Links ===== */}
-      <div className="create-section">
-        <div className="social-header">
-          <div>
-            <div className="create-label" style={{ marginBottom: 0 }}>Social links</div>
-            <div className="optional">Optional</div>
-          </div>
-          <button
-            className="social-toggle"
-            onClick={() => {
-              const el = document.getElementById('social-inputs');
-              if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-        </div>
-        <div id="social-inputs" style={{ display: 'none', marginTop: '12px' }}>
-          <input
-            type="text"
-            className="create-input"
-            placeholder="Twitter URL"
-            value={socials.twitter}
-            onChange={(e) => setSocials({ ...socials, twitter: e.target.value })}
-            style={{ marginBottom: '8px' }}
-          />
-          <input
-            type="text"
-            className="create-input"
-            placeholder="Telegram URL"
-            value={socials.telegram}
-            onChange={(e) => setSocials({ ...socials, telegram: e.target.value })}
-            style={{ marginBottom: '8px' }}
-          />
-          <input
-            type="text"
-            className="create-input"
-            placeholder="Website URL"
-            value={socials.website}
-            onChange={(e) => setSocials({ ...socials, website: e.target.value })}
-          />
-        </div>
-      </div>
-
-      {/* ===== Creator Rewards ===== */}
-      <div className="create-section">
-        <label className="create-label">Send creator rewards to:</label>
-        <div className="rewards-toggle">
-          <button
-            className={`rewards-btn ${rewardsTo === 'creator' ? 'active' : ''}`}
-            onClick={() => setRewardsTo('creator')}
-          >
-            👨‍🍳 Creator
-          </button>
-          <button
-            className={`rewards-btn ${rewardsTo === 'holders' ? 'active' : ''}`}
-            onClick={() => setRewardsTo('holders')}
-          >
-            👥 Holders
-          </button>
-        </div>
-        <p className="create-hint">
-          Creator rewards can be shared with wallets or charities from the coin page after your coin has been created.
-        </p>
-      </div>
-
-      {/* ===== Mayhem Mode ===== */}
-      <div className="mayhem-card">
-        <div className="mayhem-header">
-          <div className="mayhem-icon">〰️</div>
-          <div className="mayhem-text">
-            <div className="mayhem-title">Mayhem Mode</div>
-            <div className="mayhem-subtitle">Agent is randomly transacting!</div>
-          </div>
-          <button
-            className={`switch ${mayhemEnabled ? 'on' : 'off'}`}
-            onClick={() => setMayhemEnabled(!mayhemEnabled)}
-          >
-            <span className="switch-knob" />
-          </button>
-        </div>
-
-        {mayhemEnabled && (
-          <>
-            <div className="mayhem-subtitle" style={{ marginTop: '12px', marginBottom: '8px', fontWeight: 700 }}>
-              Mayhem agent mode
-            </div>
-            <div className="mayhem-modes">
-              <button
-                className={`mayhem-mode-btn ${mayhemMode === 'classic' ? 'active' : ''}`}
-                onClick={() => setMayhemMode('classic')}
-              >
-                〰️ Classic
-              </button>
-              <button
-                className={`mayhem-mode-btn ${mayhemMode === 'trigger' ? 'active' : ''}`}
-                onClick={() => setMayhemMode('trigger')}
-              >
-                🎯 Trigger
-              </button>
-              <button
-                className={`mayhem-mode-btn ${mayhemMode === 'party' ? 'active' : ''}`}
-                onClick={() => setMayhemMode('party')}
-              >
-                🎉 Party
-              </button>
-            </div>
-            <p className="create-hint" style={{ marginTop: '12px' }}>
-              {mayhemMode === 'classic' && 'The Mayhem agent randomly enters and exits the coin automatically. Mode cannot be changed after creation.'}
-              {mayhemMode === 'trigger' && 'The Mayhem agent only executes a transaction when prompted by the coin creator. Mode cannot be changed after creation.'}
-              {mayhemMode === 'party' && 'In Party, anyone can trigger the agent if they hold enough of the coin\'s supply.'}
-            </p>
-          </>
-        )}
-
-        <p className="create-hint" style={{ marginTop: '12px' }}>
-          Activates anytime for 24h, set at creation. <span style={{ color: '#4ade80' }}>Read disclaimer</span>
-        </p>
-      </div>
-
-      {/* ===== Next Button ===== */}
-      <button className="create-next-btn" onClick={handleSubmit} disabled={loading}>
-        {loading ? 'Creating...' : 'Next'}
+      <button
+        className="create-next-btn"
+        onClick={handleSubmit}
+        disabled={loading || !userAddress}
+      >
+        {loading
+          ? '⏳ Creating...'
+          : !userAddress
+          ? 'Connect Wallet First'
+          : '🚀 Create Token (1.5 TON)'}
       </button>
 
       <p className="create-footer-note">
@@ -284,3 +156,6 @@ export default function Create() {
     </div>
   );
 }
+
+
+
