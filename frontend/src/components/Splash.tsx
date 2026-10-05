@@ -20,7 +20,7 @@ export default function Splash({ onComplete }: SplashProps) {
   return (
     <div className={`splash ${fadeOut ? 'fade-out' : ''}`}>
       <img
-        src="/191977.png"
+        src="/ton-fun-splash.png"
         alt="ton.fun"
         style={{
           width: '100%',

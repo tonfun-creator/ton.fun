@@ -7,11 +7,14 @@ export default function Logo({ size = 32, showText = true }: LogoProps) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
       <img
-        src="/191977.png"
+        src="/ton-fun-splash.png"
         alt="ton.fun"
         width={size}
         height={size}
-        style={{ objectFit: 'contain' }}
+        style={{
+          objectFit: 'cover',
+          borderRadius: '6px',
+        }}
       />
       {showText && (
         <span
