@@ -1562,3 +1562,163 @@ body {
   margin-bottom: 12px;
   padding: 0 4px;
 }
+/* ===== Portfolio Page ===== */
+.portfolio-page { padding: 8px 0 80px 0; }
+
+.portfolio-empty { text-align: center; padding: 60px 20px; }
+.portfolio-empty-icon { font-size: 64px; margin-bottom: 16px; }
+.portfolio-empty-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+.portfolio-empty-text { font-size: 14px; color: #333; }
+
+.portfolio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.portfolio-title { font-size: 28px; font-weight: 900; letter-spacing: -0.5px; }
+
+.portfolio-wallet {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #0a0a0a;
+  color: #90EE90;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.portfolio-value-card {
+  background: #0a0a0a;
+  border-radius: 16px;
+  padding: 24px 20px;
+  margin-bottom: 12px;
+  color: #ffffff;
+}
+
+.portfolio-value-label {
+  font-size: 12px;
+  color: #888;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.portfolio-value { font-size: 42px; font-weight: 900; letter-spacing: -1.5px; margin-bottom: 8px; }
+.portfolio-value-change { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.portfolio-value-change .green { color: #4ade80; font-weight: 700; }
+.change-pct { color: #888; font-weight: 700; }
+
+.portfolio-ton-balance {
+  background: #ffffff;
+  border: 2px solid #0a0a0a;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ton-balance-left { display: flex; align-items: center; gap: 12px; }
+
+.ton-icon {
+  width: 40px;
+  height: 40px;
+  background: #0098ea;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.ton-label { font-size: 11px; color: #666; font-weight: 700; text-transform: uppercase; }
+.ton-amount { font-size: 16px; font-weight: 900; }
+.ton-value { font-size: 14px; font-weight: 800; color: #16a34a; }
+
+.portfolio-section { margin-bottom: 24px; }
+.portfolio-section h2 { font-size: 16px; font-weight: 900; margin-bottom: 12px; }
+
+.portfolio-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.holdings-count {
+  background: #0a0a0a;
+  color: #90EE90;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.holdings-list { display: flex; flex-direction: column; gap: 8px; }
+
+.holding-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+  border: 2px solid #0a0a0a;
+  border-radius: 12px;
+  padding: 12px 14px;
+  text-decoration: none;
+  color: #0a0a0a;
+  transition: transform 0.15s;
+}
+
+.holding-item:hover { transform: translateY(-1px); }
+
+.holding-emoji {
+  width: 42px;
+  height: 42px;
+  background: #e0f5e0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.holding-info { flex: 1; min-width: 0; }
+.holding-name { font-weight: 800; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.holding-symbol { font-size: 11px; color: #666; font-weight: 600; }
+.holding-right { text-align: right; }
+.holding-value { font-weight: 900; font-size: 14px; }
+.holding-profit { font-size: 12px; font-weight: 700; }
+.holding-profit.up { color: #16a34a; }
+.holding-profit.down { color: #dc2626; }
+
+/* ===== Bottom Navigation ===== */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-top: 2px solid #0a0a0a;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  z-index: 100;
+}
+
+.bottom-nav-item {
+  text-decoration: none;
+  font-size: 24px;
+  color: #0a0a0a;
+  padding: 6px 24px;
+  border-radius: 10px;
+  transition: background 0.15s;
+}
+
+.bottom-nav-item.active { background: #e0f5e0; }
+.bottom-nav-item:hover { background: #e0f5e0; }
