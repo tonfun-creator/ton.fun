@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import Logo from './Logo';
 
 interface SplashProps {
   onComplete: () => void;
@@ -20,10 +19,15 @@ export default function Splash({ onComplete }: SplashProps) {
 
   return (
     <div className={`splash ${fadeOut ? 'fade-out' : ''}`}>
-      <div className="splash-logo">
-        <Logo size={140} showText={false} />
-        <h1 className="splash-text">ton.fun</h1>
-      </div>
+      <img
+        src="/191977.png"
+        alt="ton.fun"
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+        }}
+      />
     </div>
   );
 }

@@ -1722,3 +1722,28 @@ body {
 
 .bottom-nav-item.active { background: #e0f5e0; }
 .bottom-nav-item:hover { background: #e0f5e0; }
+/* ===== Splash Screen ===== */
+.splash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #90EE90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: opacity 0.4s ease-out;
+}
+
+.splash.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.splash img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
