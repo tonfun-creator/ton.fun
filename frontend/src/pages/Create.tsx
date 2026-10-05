@@ -1,11 +1,19 @@
 import { useState } from 'react';
+import { useTonAddress } from '@tonconnect/ui-react';
 
 export default function Create() {
+// Line ko comment kar dein
+// const [tonConnectUI] = useTonConnectUI();
+  const userAddress = useTonAddress();
   const [name, setName] = useState('');
   const [ticker, setTicker] = useState('');
 
   const handleSubmit = () => {
-    alert(`Name: ${name}, Ticker: ${ticker}`);
+    if (!userAddress) {
+      alert('Pehle wallet connect karein');
+      return;
+    }
+    alert(`Name: ${name}, Ticker: ${ticker}, Address: ${userAddress}`);
   };
 
   return (
@@ -13,6 +21,20 @@ export default function Create() {
       <div className="create-header">
         <h1 className="create-title">Create a coin</h1>
       </div>
+
+      {!userAddress && (
+        <div style={{
+          background: '#3a1b1b',
+          border: '1px solid #ef4444',
+          borderRadius: '10px',
+          padding: '12px',
+          marginBottom: '16px',
+          color: '#ffaaaa',
+          fontSize: '13px',
+        }}>
+          ⚠️ Pehle wallet connect karein
+        </div>
+      )}
 
       <div className="create-section">
         <label className="create-label">Name</label>
@@ -42,4 +64,3 @@ export default function Create() {
     </div>
   );
 }
-
