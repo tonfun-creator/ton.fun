@@ -1,11 +1,12 @@
 import Header from './components/Header';
+import Home from './pages/Home';
 
 function App() {
   return (
     <div className="app">
       <Header />
-      <main className="main" style={{ padding: '40px' }}>
-        <h1>Header test works!</h1>
+      <main className="main">
+        <Home />
       </main>
     </div>
   );
