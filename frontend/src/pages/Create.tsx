@@ -1,13 +1,21 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toNano } from '@ton/core';
 import Confetti from '../components/Confetti';
 import RewardToast from '../components/RewardToast';
 import { useRewards } from '../hooks/useRewards';
+import { useWallet } from '../hooks/useWallet';
+import { CONTRACTS, CREATION_FEE, MIN_FIRST_BUY, buildCreateTokenBody } from '../lib/contracts';
 
 type PoolPair = 'TON' | 'USDT' | 'custom';
 type RewardsTo = 'creator' | 'holders';
 type MayhemMode = 'classic' | 'trigger' | 'party';
 
 export default function Create() {
+  const navigate = useNavigate();
+  const { addReward } = useRewards();
+  const { isConnected, sendTransaction } = useWallet();
+
   const [name, setName] = useState('');
   const [ticker, setTicker] = useState('');
   const [description, setDescription] = useState('');
@@ -18,21 +26,42 @@ export default function Create() {
   const [mayhemEnabled, setMayhemEnabled] = useState(false);
   const [mayhemMode, setMayhemMode] = useState<MayhemMode>('classic');
   const [showConfetti, setShowConfetti] = useState(false);
-
-  const { addReward } = useRewards();
   const [rewardShow, setRewardShow] = useState(false);
   const [rewardCoins, setRewardCoins] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (!isConnected) {
+      alert('Pehle wallet connect karein');
+      return;
+    }
     if (!name || !ticker) {
       alert('Name aur Ticker zaroori hain');
       return;
     }
-    setShowConfetti(true);
-    addReward('token_create', 10000, `Created ${name} (${ticker})`);
-    setRewardCoins(10000);
-    setRewardShow(true);
-    setTimeout(() => alert(`Token: ${name} (${ticker})`), 500);
+
+    setLoading(true);
+    try {
+      // Total value: 1 TON + 0.5 TON + 0.1 TON gas
+      const totalValue = (CREATION_FEE + MIN_FIRST_BUY + toNano('0.1')).toString();
+      const body = buildCreateTokenBody(name, ticker);
+      const payload = body.toBoc().toString('base64');
+
+      await sendTransaction(CONTRACTS.tokenFactory, totalValue, payload);
+
+      // Success
+      setShowConfetti(true);
+      addReward('token_create', 10000, `Created ${name} (${ticker})`);
+      setRewardCoins(10000);
+      setRewardShow(true);
+
+      setTimeout(() => navigate('/'), 3000);
+    } catch (err: any) {
+      console.error(err);
+      alert('❌ Error: ' + (err.message || 'Transaction failed'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -43,6 +72,22 @@ export default function Create() {
       <div className="create-header">
         <h1 className="create-title">Create a coin</h1>
       </div>
+
+      {!isConnected && (
+        <div style={{
+          background: 'rgba(255,93,108,0.15)',
+          border: '3px solid var(--down)',
+          borderRadius: '12px',
+          padding: '14px',
+          marginBottom: '16px',
+          color: 'var(--down)',
+          fontSize: '13px',
+          fontWeight: 600,
+          fontFamily: 'var(--font-display)',
+        }}>
+          ⚠️ Wallet connect karein token create karne ke liye
+        </div>
+      )}
 
       <div className="create-section">
         <label className="create-label">Name</label>
@@ -154,7 +199,9 @@ export default function Create() {
         </div>
       </div>
 
-      <button className="create-next-btn" onClick={handleSubmit}>🚀 Create Token (1.5 TON)</button>
+      <button className="create-next-btn" onClick={handleSubmit} disabled={loading || !isConnected}>
+        {loading ? '⏳ Creating...' : !isConnected ? 'Connect Wallet First' : '🚀 Create Token (1.5 TON)'}
+      </button>
       <p className="create-footer-note">Coin data cannot be changed after creation.</p>
     </div>
   );
