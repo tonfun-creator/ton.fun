@@ -83,7 +83,7 @@ export default function Create() {
             <div className="create-label" style={{ marginBottom: 0 }}>Social links</div>
             <div className="optional">Optional</div>
           </div>
-          <div style={{ transform: showSocials ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s', color: '#8b98aa' }}>
+          <div style={{ transform: showSocials ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s', color: 'var(--muted)' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -135,24 +135,22 @@ export default function Create() {
         )}
 
         <p className="create-hint">
-          Activates anytime for 24h, set at creation. <span style={{ color: '#2db3ff' }}>Read disclaimer</span>
+          Activates anytime for 24h, set at creation. <span style={{ color: 'var(--accent)' }}>Read disclaimer</span>
         </p>
       </div>
 
-      <div className="mayhem-card">
-        <div className="token-card-stats" style={{ borderTop: 'none', paddingTop: 0, marginBottom: '10px' }}>
-          <div>
-            <div className="token-card-stat-label">Creation fee</div>
-            <div className="token-card-stat-value">1 TON</div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div className="token-card-stat-label">Min first buy</div>
-            <div className="token-card-stat-value">0.5 TON</div>
-          </div>
+      <div className="fee-box">
+        <div className="fee-row">
+          <span>Creation fee</span>
+          <strong>1 TON</strong>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '2px solid #28313e' }}>
-          <span className="create-label" style={{ marginBottom: 0 }}>Total</span>
-          <span style={{ color: '#3ddc84', fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '18px' }}>1.5 TON</span>
+        <div className="fee-row">
+          <span>Minimum first buy</span>
+          <strong>0.5 TON</strong>
+        </div>
+        <div className="fee-total">
+          <span>Total</span>
+          <span>1.5 TON</span>
         </div>
       </div>
 
