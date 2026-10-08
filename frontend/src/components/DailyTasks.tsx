@@ -1,4 +1,4 @@
-import { useRewards, RewardType } from '../hooks/useRewards';
+import { useRewards, type RewardType } from '../hooks/useRewards';
 import { playSound } from '../utils/sound';
 
 interface Task {
