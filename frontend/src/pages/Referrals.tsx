@@ -2,14 +2,14 @@ import { useReferral } from '../hooks/useReferral';
 import { useTelegramUser } from '../hooks/useTelegramUser';
 
 const DEMO_LEADERBOARD = [
-  { rank: 1, username: 'CryptoKing', referrals: 245, points: 1225000 },
-  { rank: 2, username: 'DegenTrader', referrals: 189, points: 945000 },
-  { rank: 3, username: 'MoonHunter', referrals: 156, points: 780000 },
-  { rank: 4, username: 'WhaleAlert', referrals: 98, points: 490000 },
-  { rank: 5, username: 'ApeKing', referrals: 87, points: 435000 },
-  { rank: 6, username: 'SatoshiJr', referrals: 65, points: 325000 },
-  { rank: 7, username: 'TokinMaster', referrals: 54, points: 270000 },
-  { rank: 8, username: 'PumpLord', referrals: 42, points: 210000 },
+  { rank: 1, username: 'CryptoKing', referrals: 245, coins: 1225000 },
+  { rank: 2, username: 'DegenTrader', referrals: 189, coins: 945000 },
+  { rank: 3, username: 'MoonHunter', referrals: 156, coins: 780000 },
+  { rank: 4, username: 'WhaleAlert', referrals: 98, coins: 490000 },
+  { rank: 5, username: 'ApeKing', referrals: 87, coins: 435000 },
+  { rank: 6, username: 'SatoshiJr', referrals: 65, coins: 325000 },
+  { rank: 7, username: 'TokinMaster', referrals: 54, coins: 270000 },
+  { rank: 8, username: 'PumpLord', referrals: 42, coins: 210000 },
 ];
 
 export default function Referrals() {
@@ -38,8 +38,26 @@ export default function Referrals() {
       <div style={{ padding: '0 16px' }}>
         <h1 style={{ fontSize: '24px', fontWeight: 900, marginBottom: '4px' }}>👥 Referrals</h1>
         <p style={{ fontSize: '13px', color: '#888', marginBottom: '20px' }}>
-          Invite friends · Earn 5000 pts per friend who creates a token
+          Invite friends · Earn 5,000 coins per friend who creates a token
         </p>
+
+        {/* All-Time Top Ranking Banner */}
+        <div style={{
+          background: 'linear-gradient(135deg, #ffd700 0%, #b8860b 100%)',
+          borderRadius: '12px',
+          padding: '14px',
+          marginBottom: '16px',
+          color: '#0a0a0a',
+          textAlign: 'center',
+        }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px' }}>ALL-TIME TOP RANKING</div>
+          <div style={{ fontSize: '22px', fontWeight: 900, marginTop: '4px' }}>
+            🏆 1,000,000 Coins Pool
+          </div>
+          <div style={{ fontSize: '11px', opacity: 0.8, marginTop: '4px' }}>
+            Distributed to top referrers (all-time)
+          </div>
+        </div>
 
         {/* Referral Card */}
         <div style={{
@@ -112,12 +130,12 @@ export default function Referrals() {
             <div style={{ fontSize: '16px', fontWeight: 900, color: '#4ade80' }}>
               {totalPointsFromReferrals.toLocaleString()}
             </div>
-            <div style={{ fontSize: '10px', color: '#888', marginTop: '2px' }}>Points</div>
+            <div style={{ fontSize: '10px', color: '#888', marginTop: '2px' }}>Coins</div>
           </div>
         </div>
 
         {/* Leaderboard */}
-        <h2 style={{ fontSize: '16px', fontWeight: 900, marginBottom: '12px' }}>🏆 Referral Leaderboard</h2>
+        <h2 style={{ fontSize: '16px', fontWeight: 900, marginBottom: '12px' }}>🏆 All-Time Referral Leaderboard</h2>
 
         {/* Current user */}
         {user && (
@@ -168,9 +186,9 @@ export default function Referrals() {
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: '13px', fontWeight: 900, color: '#4ade80' }}>
-                  {r.points.toLocaleString()}
+                  {r.coins.toLocaleString()}
                 </div>
-                <div style={{ fontSize: '9px', color: '#666' }}>pts</div>
+                <div style={{ fontSize: '9px', color: '#666' }}>coins</div>
               </div>
             </div>
           ))}
@@ -201,7 +219,7 @@ export default function Referrals() {
                     </div>
                   </div>
                   <div style={{ fontSize: '12px', fontWeight: 800, color: r.pointsEarned > 0 ? '#4ade80' : '#666' }}>
-                    +{r.pointsEarned}
+                    +{r.pointsEarned.toLocaleString()}
                   </div>
                 </div>
               ))}

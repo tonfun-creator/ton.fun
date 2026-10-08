@@ -7,19 +7,19 @@ interface Task {
   description: string;
   icon: string;
   type: RewardType;
+  coins: number;
   link?: string;
 }
 
 const TASKS: Task[] = [
-  { id: 'daily_login', title: 'Daily Login', description: 'Open app daily', icon: '📅', type: 'daily' },
-  { id: 'join_tg_channel', title: 'Join Telegram Channel', description: 'Follow @tonfun_officialBot channel', icon: '📢', type: 'tg_channel', link: 'https://t.me/tonfun_officialBot' },
-  { id: 'join_tg_group', title: 'Join Telegram Group', description: 'Join our community chat', icon: '💬', type: 'tg_group', link: 'https://t.me/tonfun_officialBot' },
-  { id: 'follow_x', title: 'Follow on X', description: 'Follow @tonfun on X', icon: '𝕏', type: 'x_follow', link: 'https://x.com' },
-  { id: 'engage_x', title: 'Like, Repost & Comment', description: 'Engage with pinned post', icon: '❤️', type: 'x_engage', link: 'https://x.com' },
-  { id: 'youtube_sub', title: 'Subscribe YouTube', description: 'Subscribe to ton.fun channel', icon: '▶️', type: 'youtube_sub', link: 'https://youtube.com' },
-  { id: 'create_token', title: 'Launch a Token', description: 'Create your first meme coin', icon: '🚀', type: 'token_create' },
-  { id: 'buy_token', title: 'Buy a Token', description: 'Buy any token on ton.fun', icon: '💰', type: 'buy' },
-  { id: 'sell_token', title: 'Sell a Token', description: 'Sell any token you hold', icon: '💸', type: 'sell' },
+  { id: 'daily_login', title: 'Daily Login', description: 'Open app daily', icon: '📅', type: 'daily', coins: 1000 },
+  { id: 'join_tg_channel', title: 'Join Telegram Channel', description: 'Follow official channel', icon: '📢', type: 'tg_channel', coins: 1000, link: 'https://t.me/tonfun_officialBot' },
+  { id: 'join_tg_group', title: 'Join Telegram Group', description: 'Join community chat', icon: '💬', type: 'tg_group', coins: 1000, link: 'https://t.me/tonfun_officialBot' },
+  { id: 'follow_x', title: 'Follow on X', description: 'Follow @tonfun on X', icon: '𝕏', type: 'x_follow', coins: 1000, link: 'https://x.com' },
+  { id: 'engage_x', title: 'Like + Repost + Comment', description: 'Engage with pinned post on X', icon: '❤️', type: 'x_engage', coins: 2500, link: 'https://x.com' },
+  { id: 'create_token', title: 'Launch a Token', description: 'Create your first meme coin', icon: '🚀', type: 'token_create', coins: 10000 },
+  { id: 'buy_token', title: 'Buy a Token', description: 'Buy any token on ton.fun', icon: '💰', type: 'buy', coins: 1000 },
+  { id: 'sell_token', title: 'Sell a Token', description: 'Sell any token you hold', icon: '💸', type: 'sell', coins: 500 },
 ];
 
 export default function DailyTasks() {
@@ -75,7 +75,7 @@ export default function DailyTasks() {
                 fontWeight: 900,
                 whiteSpace: 'nowrap',
               }}>
-                {done ? '✓' : `+${1000}`}
+                {done ? '✓' : `+${t.coins.toLocaleString()}`}
               </div>
             </div>
           );

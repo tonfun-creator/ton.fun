@@ -10,7 +10,6 @@ export type RewardType =
   | 'x_follow'
   | 'x_engage'
   | 'referral'
-  | 'youtube_sub'
   | 'bonus';
 
 export const REWARD_VALUES: Record<RewardType, number> = {
@@ -21,16 +20,15 @@ export const REWARD_VALUES: Record<RewardType, number> = {
   tg_channel: 1000,
   tg_group: 1000,
   x_follow: 1000,
-  x_engage: 1000,
+  x_engage: 2500,
   referral: 5000,
-  youtube_sub: 1000,
   bonus: 0,
 };
 
 export interface RewardTransaction {
   id: string;
   type: RewardType;
-  points: number;
+  coins: number;
   description: string;
   timestamp: number;
 }
@@ -42,7 +40,7 @@ interface RewardsData {
   completedTasks: string[];
 }
 
-const STORAGE_KEY = 'tonfun_rewards_v2';
+const STORAGE_KEY = 'tonfun_coins_v1';
 
 export function useRewards() {
   const [data, setData] = useState<RewardsData>({
@@ -64,17 +62,17 @@ export function useRewards() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
   };
 
-  const addReward = (type: RewardType, points: number, description: string) => {
+  const addReward = (type: RewardType, coins: number, description: string) => {
     const tx: RewardTransaction = {
       id: Date.now().toString() + Math.random(),
       type,
-      points,
+      coins,
       description,
       timestamp: Date.now(),
     };
     save({
-      balance: data.balance + points,
-      totalEarned: data.totalEarned + points,
+      balance: data.balance + coins,
+      totalEarned: data.totalEarned + coins,
       transactions: [tx, ...data.transactions].slice(0, 100),
       completedTasks: data.completedTasks,
     });
@@ -83,17 +81,17 @@ export function useRewards() {
 
   const completeTask = (taskId: string, type: RewardType, description: string) => {
     if (data.completedTasks.includes(taskId)) return false;
-    const points = REWARD_VALUES[type];
+    const coins = REWARD_VALUES[type];
     const tx: RewardTransaction = {
       id: Date.now().toString() + Math.random(),
       type,
-      points,
+      coins,
       description,
       timestamp: Date.now(),
     };
     save({
-      balance: data.balance + points,
-      totalEarned: data.totalEarned + points,
+      balance: data.balance + coins,
+      totalEarned: data.totalEarned + coins,
       transactions: [tx, ...data.transactions].slice(0, 100),
       completedTasks: [...data.completedTasks, taskId],
     });

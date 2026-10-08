@@ -18,7 +18,7 @@ export default function Rewards() {
         {/* Leaderboard Rewards */}
         <div style={{ marginTop: '24px' }}>
           <h3 style={{ fontSize: '16px', fontWeight: 900, marginBottom: '12px' }}>
-            🏆 Weekly Leaderboard Rewards
+🏆 All-Time Leaderboard Rewards
           </h3>
           <div style={{
             background: 'linear-gradient(135deg, #ffd700 0%, #b8860b 100%)',
@@ -29,26 +29,26 @@ export default function Rewards() {
           }}>
             <div style={{ fontSize: '48px', marginBottom: '8px' }}>🥇</div>
             <div style={{ fontSize: '18px', fontWeight: 900, marginBottom: '4px' }}>
-              100 TON Prize Pool
+1,000,000 Coins Prize Pool
             </div>
             <div style={{ fontSize: '12px', opacity: 0.8, marginBottom: '16px' }}>
-              Top 10 traders share the pool
+Top 10 traders share the pool (all-time)
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: '12px', fontWeight: 700 }}>
               <div>
-                <div>🥇 40 TON</div>
+<div>🥇 400K</div>
                 <div style={{ fontSize: '10px', opacity: 0.7, fontWeight: 400 }}>Rank 1</div>
               </div>
               <div>
-                <div>🥈 25 TON</div>
+<div>🥈 250K</div>
                 <div style={{ fontSize: '10px', opacity: 0.7, fontWeight: 400 }}>Rank 2</div>
               </div>
               <div>
-                <div>🥉 15 TON</div>
+<div>🥉 150K</div>
                 <div style={{ fontSize: '10px', opacity: 0.7, fontWeight: 400 }}>Rank 3</div>
               </div>
               <div>
-                <div>🎁 20 TON</div>
+<div>🎁 200K</div>
                 <div style={{ fontSize: '10px', opacity: 0.7, fontWeight: 400 }}>Ranks 4-10</div>
               </div>
             </div>
