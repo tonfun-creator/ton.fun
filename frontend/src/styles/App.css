@@ -1747,3 +1747,35 @@ body {
   height: 100%;
   object-fit: cover;
 }
+/* ===== User Chip (Header) ===== */
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #0a0a0a;
+  color: #90EE90;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+  text-decoration: none;
+  border: 2px solid #0a0a0a;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-chip.guest {
+  background: #e0e0e0;
+  color: #666;
+}
+
+.user-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 6px #4ade80;
+  flex-shrink: 0;
+}
