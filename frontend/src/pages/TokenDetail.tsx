@@ -53,7 +53,6 @@ export default function TokenDetail() {
   const [amount, setAmount] = useState('');
   const [timeframe, setTimeframe] = useState('1h');
   const [chartData, setChartData] = useState<CandleData[]>([]);
-  const [statsTf, setStatsTf] = useState('1H');
 
   const token = {
     address,
@@ -86,272 +85,159 @@ export default function TokenDetail() {
   const quickAmounts = ['0.1', '0.5', '1', '5'];
 
   return (
-    <div className="detail-page">
-      <div className="detail-topbar">
-        <button className="detail-back" onClick={() => window.history.back()}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-        <span className="detail-topbar-name">{token.name}</span>
-        <span className="detail-topbar-time">⏱ 3h</span>
-        <span className="detail-topbar-views">👁 234</span>
+    <div style={{ background: 'var(--bg)', margin: '-16px', padding: '16px 16px 120px', minHeight: '100vh' }}>
+
+      {/* Top bar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+        <button onClick={() => window.history.back()} style={{ background: 'var(--surface)', border: '3px solid #000', borderRadius: '10px', color: 'var(--fg)', width: '36px', height: '36px', fontSize: '16px', boxShadow: '2px 2px 0 #000' }}>←</button>
+        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '15px' }}>{token.name}</span>
+        <span style={{ fontSize: '11px', color: 'var(--muted)' }}>⏱ 3h</span>
+        <span style={{ fontSize: '11px', color: 'var(--muted)' }}>👁 234</span>
       </div>
 
-      <div className="detail-token-header">
-        <div className="detail-token-img">{token.emoji}</div>
-        <div className="detail-token-info">
-          <h1>{token.name}</h1>
-          <div className="detail-token-address">
-            {token.address?.slice(0, 6)}...{token.address?.slice(-4)}
-          </div>
+      {/* Header */}
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '10px' }}>
+        <div style={{ width: '56px', height: '56px', background: 'var(--surface-2)', border: '3px solid #000', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', flexShrink: 0 }}>{token.emoji}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 800 }}>{token.name}</h1>
+          <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{token.address?.slice(0, 6)}...{token.address?.slice(-4)}</div>
         </div>
         <TokenActions address={address || ''} name={token.name} />
-        <div className="detail-token-mc">
-          <div className="mc-label">MC</div>
-          <div className="mc-value">${token.marketCap}</div>
-          <div className={`mc-change ${token.isPositive ? 'up' : 'down'}`}>↑ {token.change}</div>
+      </div>
+
+      {/* MC */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '10px', padding: '12px 14px', background: 'var(--surface)', border: '3px solid #000', borderRadius: '12px', boxShadow: '3px 3px 0 #000' }}>
+        <div>
+          <div style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '1px' }}>MARKET CAP</div>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '20px', fontWeight: 900 }}>${token.marketCap}</div>
         </div>
+        <div style={{ fontFamily: 'var(--font-display)', fontSize: '14px', fontWeight: 800, color: 'var(--up)', background: 'rgba(61,220,132,0.15)', padding: '4px 10px', borderRadius: '8px' }}>↑ {token.change}</div>
       </div>
 
-      <div className="detail-holders-info">{token.holders} holders</div>
+      <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '12px' }}>{token.holders} holders</div>
 
-      <div className="detail-chart">
-        <PriceChart data={chartData} height={260} />
+      {/* Chart */}
+      <div style={{ background: 'var(--surface)', border: '3px solid #000', borderRadius: '14px', padding: '8px 4px', boxShadow: '3px 3px 0 #000', marginBottom: '12px' }}>
+        <PriceChart data={chartData} height={240} />
       </div>
 
-      <div className="detail-timeframes">
+      {/* Timeframe */}
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '14px', overflowX: 'auto' }}>
         {['1m', '5m', '15m', '1h', 'All'].map(tf => (
-          <button
-            key={tf}
-            className={`timeframe-btn ${timeframe === tf ? 'active' : ''}`}
-            onClick={() => setTimeframe(tf)}
-          >
-            {tf}
-          </button>
+          <button key={tf} onClick={() => setTimeframe(tf)} style={{
+            padding: '8px 14px', flexShrink: 0,
+            background: timeframe === tf ? 'var(--accent)' : 'var(--surface)',
+            color: timeframe === tf ? 'var(--accent-ink)' : 'var(--fg)',
+            border: '3px solid #000', borderRadius: '999px',
+            fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '12px',
+            boxShadow: timeframe === tf ? '3px 3px 0 #0a6aa6' : '3px 3px 0 #000',
+          }}>{tf}</button>
         ))}
       </div>
 
-      <div className="detail-tabs">
-        <button className={`detail-tab ${tab === 'callouts' ? 'active' : ''}`} onClick={() => setTab('callouts')}>Callouts</button>
-        <button className={`detail-tab ${tab === 'comments' ? 'active' : ''}`} onClick={() => setTab('comments')}>Comments</button>
-        <button className={`detail-tab ${tab === 'holders' ? 'active' : ''}`} onClick={() => setTab('holders')}>Holders</button>
-        <button className={`detail-tab ${tab === 'about' ? 'active' : ''}`} onClick={() => setTab('about')}>About</button>
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '14px', overflowX: 'auto' }}>
+        {(['callouts', 'comments', 'holders', 'about'] as const).map(t => (
+          <button key={t} onClick={() => setTab(t)} style={{
+            padding: '8px 16px', flexShrink: 0,
+            background: tab === t ? 'var(--accent)' : 'var(--surface)',
+            color: tab === t ? 'var(--accent-ink)' : 'var(--fg)',
+            border: '3px solid #000', borderRadius: '10px',
+            fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '12px',
+            textTransform: 'capitalize',
+            boxShadow: tab === t ? '3px 3px 0 #0a6aa6' : '3px 3px 0 #000',
+          }}>{t}</button>
+        ))}
       </div>
 
+      {/* Callouts */}
       {tab === 'callouts' && (
-        <div className="detail-callouts">
-          <button className="new-callout-btn">↑ New callouts</button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {CALLOUTS.map((c, i) => (
-            <div key={i} className="callout-item">
-              <div className="callout-avatar">{c.avatar}</div>
-              <div className="callout-content">
-                <div className="callout-header">
-                  <strong>{c.user}</strong>
-                  <FollowButton username={c.user} />
-                  <span className="callout-time">{c.time}</span>
-                </div>
-                <p>{c.text}</p>
-                <div className="callout-position">
-                  <div>
-                    <div className="pos-label">Position</div>
-                    <div className="pos-value">{c.position}</div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div className="pos-label">Profit</div>
-                    <div className="pos-value green">{c.profit} ↑ {c.pct}</div>
-                  </div>
-                </div>
-                <EmojiReactions calloutId={`callout-${i}`} />
+            <div key={i} style={{ background: 'var(--surface)', border: '3px solid #000', borderRadius: '14px', padding: '14px', boxShadow: '3px 3px 0 #000' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <div style={{ width: '36px', height: '36px', background: 'var(--surface-2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>{c.avatar}</div>
+                <strong style={{ fontSize: '13px' }}>{c.user}</strong>
+                <FollowButton username={c.user} />
+                <span style={{ fontSize: '11px', color: 'var(--muted)', marginLeft: 'auto' }}>{c.time}</span>
               </div>
+              <p style={{ fontSize: '13px', color: '#ccc', marginBottom: '10px' }}>{c.text}</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', background: 'var(--bg)', borderRadius: '10px', padding: '10px', border: '2px solid #28313e' }}>
+                <div>
+                  <div style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 700 }}>POSITION</div>
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800 }}>{c.position}</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 700 }}>PROFIT</div>
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, color: 'var(--up)' }}>{c.profit} ↑ {c.pct}</div>
+                </div>
+              </div>
+              <EmojiReactions calloutId={`callout-${i}`} />
             </div>
           ))}
         </div>
       )}
 
-      {tab === 'comments' && (
-        <Comments tokenAddress={address || ''} />
-      )}
+      {tab === 'comments' && <Comments tokenAddress={address || ''} />}
 
+      {/* Holders */}
       {tab === 'holders' && (
-        <div className="detail-holders">
-          <div className="holders-header">
-            <button className="holders-filter active">Pump.fun (482)</button>
-            <button className="holders-filter">Following (0)</button>
-            <button className="holders-filter">All</button>
-          </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {HOLDERS.map((h, i) => (
-            <div key={i} className="holder-item">
-              <div style={{ width: '20px', fontWeight: 900, fontSize: '13px', color: '#666' }}>#{h.rank}</div>
-              <div className="holder-avatar">{h.avatar}</div>
-              <div className="holder-info">
-                <strong>{h.name}</strong>
-                <div className="holder-pct">{h.pct} | {h.value}</div>
+            <div key={i} style={{ background: 'var(--surface)', border: '3px solid #000', borderRadius: '12px', padding: '12px 14px', boxShadow: '3px 3px 0 #000', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '13px', color: 'var(--muted)', width: '24px' }}>#{h.rank}</div>
+              <div style={{ width: '38px', height: '38px', background: 'var(--surface-2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>{h.avatar}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: '13px' }}>{h.name}</div>
+                <div style={{ fontSize: '10px', color: 'var(--muted)' }}>{h.pct} | {h.value}</div>
               </div>
-              <div className="holder-profit">
-                <div className="green">↑ {h.profit}</div>
-              </div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--up)' }}>↑ {h.profit}</div>
             </div>
           ))}
         </div>
       )}
 
+      {/* About */}
       {tab === 'about' && (
-        <div className="detail-about">
-          <div className="detail-section">
-            <h3>Audit ℹ️</h3>
-            <div className="audit-grid">
-              <div className="audit-box">
-                <div className="audit-icon">≋</div>
-                <div className="audit-value">{token.fees}</div>
-                <div className="audit-label">Fees</div>
+        <div>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 800, marginBottom: '12px' }}>Audit ℹ️</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '20px' }}>
+            {[
+              { icon: '≋', value: token.fees, label: 'Fees' },
+              { icon: '👤', value: token.holders, label: 'Holders' },
+              { icon: '👑', value: token.top10 + '%', label: 'Top 10' },
+              { icon: '🎯', value: token.snipers + '%', label: 'Snipers' },
+              { icon: '—', value: token.devHoldings, label: 'Dev' },
+              { icon: '📚', value: token.bundlers + '%', label: 'Bundlers' },
+            ].map((b, i) => (
+              <div key={i} style={{ background: 'var(--surface)', border: '3px solid #000', borderRadius: '12px', padding: '12px 8px', textAlign: 'center', boxShadow: '3px 3px 0 #000' }}>
+                <div style={{ fontSize: '16px', marginBottom: '4px' }}>{b.icon}</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '14px' }}>{b.value}</div>
+                <div style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '2px' }}>{b.label}</div>
               </div>
-              <div className="audit-box">
-                <div className="audit-icon green">👤</div>
-                <div className="audit-value">{token.holders}</div>
-                <div className="audit-label">Holders</div>
-              </div>
-              <div className="audit-box">
-                <div className="audit-icon red">👑</div>
-                <div className="audit-value">{token.top10}%</div>
-                <div className="audit-label">Top 10</div>
-              </div>
-              <div className="audit-box">
-                <div className="audit-icon green">🎯</div>
-                <div className="audit-value">{token.snipers}%</div>
-                <div className="audit-label">Snipers</div>
-              </div>
-              <div className="audit-box">
-                <div className="audit-icon">—</div>
-                <div className="audit-value">{token.devHoldings}</div>
-                <div className="audit-label">Dev</div>
-              </div>
-              <div className="audit-box">
-                <div className="audit-icon green">📚</div>
-                <div className="audit-value">{token.bundlers}%</div>
-                <div className="audit-label">Bundlers</div>
-              </div>
-            </div>
+            ))}
           </div>
-
-          <div className="detail-section">
-            <MemeGenerator tokenName={token.name} tokenSymbol={token.symbol} emoji={token.emoji} />
-          </div>
-
-          <div className="detail-section">
-            <div className="detail-section-header">
-              <h3>Stats</h3>
-              <div className="stats-timeframe">
-                {['5M', '1H', '1D'].map(t => (
-                  <button
-                    key={t}
-                    className={`stats-tf-btn ${statsTf === t ? 'active' : ''}`}
-                    onClick={() => setStatsTf(t)}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="stats-row">
-              <div className="stats-enters">🟢 {token.enters} Enters</div>
-              <div className="stats-exits">🔴 {token.exits} Exits</div>
-            </div>
+          <MemeGenerator tokenName={token.name} tokenSymbol={token.symbol} emoji={token.emoji} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', fontFamily: 'var(--font-display)', fontWeight: 800 }}>
+            <span style={{ color: 'var(--up)' }}>🟢 {token.enters} Enters</span>
+            <span style={{ color: 'var(--down)' }}>🔴 {token.exits} Exits</span>
           </div>
         </div>
       )}
 
-      <div style={{ padding: '16px', background: '#0a0a0a', borderTop: '1px solid #1a1a1a' }}>
-        <div style={{ display: 'flex', gap: '4px', background: '#141414', borderRadius: '10px', padding: '4px', marginBottom: '12px' }}>
-          <button
-            onClick={() => setTradeTab('buy')}
-            style={{
-              flex: 1,
-              padding: '10px',
-              background: tradeTab === 'buy' ? '#2a2a2a' : 'transparent',
-              color: tradeTab === 'buy' ? '#fff' : '#888',
-              border: 'none',
-              borderRadius: '8px',
-              fontWeight: 800,
-              fontSize: '14px',
-              cursor: 'pointer',
-            }}
-          >
-            Buy
-          </button>
-          <button
-            onClick={() => setTradeTab('sell')}
-            style={{
-              flex: 1,
-              padding: '10px',
-              background: tradeTab === 'sell' ? '#2a2a2a' : 'transparent',
-              color: tradeTab === 'sell' ? '#fff' : '#888',
-              border: 'none',
-              borderRadius: '8px',
-              fontWeight: 800,
-              fontSize: '14px',
-              cursor: 'pointer',
-            }}
-          >
-            Sell
-          </button>
+      {/* Trade panel */}
+      <div style={{ position: 'fixed', bottom: '70px', left: 0, right: 0, background: 'var(--surface)', borderTop: '3px solid #000', padding: '12px 16px', zIndex: 150 }}>
+        <div style={{ display: 'flex', gap: '4px', background: 'var(--bg)', borderRadius: '10px', padding: '4px', marginBottom: '10px' }}>
+          <button onClick={() => setTradeTab('buy')} style={{ flex: 1, padding: '10px', background: tradeTab === 'buy' ? 'var(--up)' : 'transparent', color: tradeTab === 'buy' ? '#052412' : 'var(--muted)', border: 'none', borderRadius: '8px', fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '14px' }}>Buy</button>
+          <button onClick={() => setTradeTab('sell')} style={{ flex: 1, padding: '10px', background: tradeTab === 'sell' ? 'var(--down)' : 'transparent', color: tradeTab === 'sell' ? '#fff' : 'var(--muted)', border: 'none', borderRadius: '8px', fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '14px' }}>Sell</button>
         </div>
-
-        <input
-          type="number"
-          placeholder="0"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '14px',
-            fontSize: '18px',
-            fontWeight: 800,
-            border: '1px solid #2a2a2a',
-            borderRadius: '10px',
-            background: '#141414',
-            color: '#fff',
-            marginBottom: '10px',
-            outline: 'none',
-          }}
-        />
-
-        <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
+        <input type="number" placeholder="0.0" value={amount} onChange={(e) => setAmount(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: 'var(--bg)', border: '3px solid #000', borderRadius: '10px', color: 'var(--fg)', fontSize: '16px', fontWeight: 700, marginBottom: '8px', outline: 'none' }} />
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
           {quickAmounts.map(q => (
-            <button
-              key={q}
-              onClick={() => setAmount(q)}
-              style={{
-                flex: 1,
-                padding: '8px',
-                background: amount === q ? '#2a2a2a' : '#141414',
-                border: amount === q ? '1px solid #4ade80' : '1px solid #2a2a2a',
-                borderRadius: '8px',
-                color: amount === q ? '#4ade80' : '#aaa',
-                fontWeight: 700,
-                fontSize: '13px',
-                cursor: 'pointer',
-              }}
-            >
-              {q}
-            </button>
+            <button key={q} onClick={() => setAmount(q)} style={{ flex: 1, padding: '8px', background: amount === q ? 'var(--accent)' : 'var(--bg)', border: '3px solid #000', borderRadius: '8px', color: amount === q ? 'var(--accent-ink)' : 'var(--muted)', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '12px' }}>{q}</button>
           ))}
         </div>
-
-        <button
-          onClick={handleTrade}
-          style={{
-            width: '100%',
-            padding: '16px',
-            background: tradeTab === 'buy' ? '#4ade80' : '#ef4444',
-            color: tradeTab === 'buy' ? '#0a0a0a' : '#fff',
-            border: 'none',
-            borderRadius: '12px',
-            fontWeight: 900,
-            fontSize: '15px',
-            cursor: 'pointer',
-          }}
-        >
+        <button onClick={handleTrade} style={{ width: '100%', padding: '14px', background: tradeTab === 'buy' ? 'var(--up)' : 'var(--down)', color: tradeTab === 'buy' ? '#052412' : '#fff', border: '3px solid #000', borderRadius: '12px', fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '15px', boxShadow: tradeTab === 'buy' ? '3px 3px 0 #138343' : '3px 3px 0 #a3263a' }}>
           {tradeTab === 'buy' ? '💰 Buy' : '💸 Sell'} {token.symbol}
         </button>
       </div>
